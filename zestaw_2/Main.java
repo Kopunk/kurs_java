@@ -95,6 +95,66 @@ class BigLiczba {
     }
 }
 
+class Macierz {
+    int[][] macierz = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+
+    Macierz(int[][] macierz) {
+        assert macierz.length != 3 : "Only 3x3 matrices accepted";
+        for (int i = 0; i < 3; i++) {
+            assert macierz[i].length != 3 : "Only 3x3 matrices accepted";
+            for (int j = 0; j < 3; j++) {
+                this.macierz[i][j] = macierz[i][j];
+            }
+        }
+    }
+
+    Macierz() {
+    }
+
+    public String toString() {
+        return "" + macierz[0][0] + "\t" + macierz[0][1] + "\t" + macierz[0][2] + "\n"
+            + macierz[1][0] + "\t" + macierz[1][1] + "\t" + macierz[1][2] + "\n"
+            + macierz[2][0] + "\t" + macierz[2][1] + "\t" + macierz[2][2];
+    }
+
+    void set(int xCoord, int yCoord, int value) {
+        assert xCoord >= 0 && xCoord <= 3 : "Accepted x coordinates between 0 and 3";
+        assert yCoord >= 0 && yCoord <= 3 : "Accepted y coordinates between 0 and 3";
+
+        this.macierz[yCoord][xCoord] = value;
+    }
+
+    int wyznacznik() {
+        int value = 0;
+        for (int i = 0; i < 3; i++) {
+            int tmp = 1;
+            for (int j = 0; j < 3; j++) {
+                tmp *= macierz[j][(j + i) % 3];
+            }
+            value += tmp;
+        }
+        for (int i = 0; i < 3; i++) {
+            int tmp = 1;
+            for (int j = 3; j > 0; --j) {
+                tmp *= macierz[j][(j + i) % 3];
+            }
+            value -= tmp;
+        }
+        return value;
+    }
+
+    void transpozycja() {
+        int tmp;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                tmp = macierz[i][j];
+                macierz[i][j] = macierz[j][i];
+                macierz[j][i] = tmp;
+            }
+        }
+    }
+}
+
 public class Main {
     public static void main(String[] args) {
         // Testowanie klasy Ułamek
@@ -133,5 +193,27 @@ public class Main {
         System.out.println("true: " + pierwszaA.czyPierwsza());
         System.out.println("false: " + pierwszaA.czyPodzielna(niePierwszaB));
         System.out.println("true: " + pierwszaB.czyPierwsza());
+
+        // Testowanie klasy Macierz
+        try {
+            int[][] mArrErr1 = { { 1, 2, 3 } };
+            new Macierz(mArrErr1);
+            System.out.println("Failed to catch exception;");
+        } catch (Exception e) {
+            System.out.println("Pass: " + e);
+        }
+        try {
+            Macierz m = new Macierz();
+            m.set(1, 3, 1);
+            System.out.println("Failed to catch exception;");
+        } catch (Exception e) {
+            System.out.println("Pass: " + e);
+        }
+        int[][] mArr = { { 4, 2, 1 }, { 5, 2, 1 }, { 6, 4, 1 } };
+        Macierz m1 = new Macierz(mArr); // wyznacznik -22
+        System.out.println(m1);
+
+        System.out.println("Wyznacznik macierzy -22: " + m1.wyznacznik());
+
     }
 }
