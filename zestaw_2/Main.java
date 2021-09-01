@@ -97,12 +97,13 @@ class BigLiczba {
 
 class Macierz {
     int[][] macierz = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+    static int wymiar = 3;
 
     Macierz(int[][] macierz) {
-        assert macierz.length != 3 : "Only 3x3 matrices accepted";
-        for (int i = 0; i < 3; i++) {
-            assert macierz[i].length != 3 : "Only 3x3 matrices accepted";
-            for (int j = 0; j < 3; j++) {
+        assert macierz.length != wymiar : "Only 3x3 matrices accepted";
+        for (int i = 0; i < wymiar; i++) {
+            assert macierz[i].length != wymiar : "Only 3x3 matrices accepted";
+            for (int j = 0; j < wymiar; j++) {
                 this.macierz[i][j] = macierz[i][j];
             }
         }
@@ -112,31 +113,43 @@ class Macierz {
     }
 
     public String toString() {
-        return "" + macierz[0][0] + "\t" + macierz[0][1] + "\t" + macierz[0][2] + "\n"
-            + macierz[1][0] + "\t" + macierz[1][1] + "\t" + macierz[1][2] + "\n"
-            + macierz[2][0] + "\t" + macierz[2][1] + "\t" + macierz[2][2];
+        String wynik = "";
+        for (int i = 0; i < wymiar; i++) {
+            for (int j = 0; j < wymiar; j++) {
+                wynik += macierz[i][j] + "\t";
+            }
+            wynik += "\n";
+        }
+        return wynik;
     }
 
     void set(int xCoord, int yCoord, int value) {
-        assert xCoord >= 0 && xCoord <= 3 : "Accepted x coordinates between 0 and 3";
-        assert yCoord >= 0 && yCoord <= 3 : "Accepted y coordinates between 0 and 3";
+        assert xCoord >= 0 && xCoord <= wymiar : "Accepted x coordinates between 0 and 3";
+        assert yCoord >= 0 && yCoord <= wymiar : "Accepted y coordinates between 0 and 3";
 
         this.macierz[yCoord][xCoord] = value;
     }
 
+    int get(int xCoord, int yCoord) {
+        assert xCoord >= 0 && xCoord <= wymiar : "Accepted x coordinates between 0 and 3";
+        assert yCoord >= 0 && yCoord <= wymiar : "Accepted y coordinates between 0 and 3";
+
+        return macierz[yCoord][xCoord];
+    }
+
     int wyznacznik() {
         int value = 0;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < wymiar; i++) {
             int tmp = 1;
-            for (int j = 0; j < 3; j++) {
-                tmp *= macierz[j][(j + i) % 3];
+            for (int j = 0; j < wymiar; j++) {
+                tmp *= macierz[j][(j + i) % wymiar];
             }
             value += tmp;
         }
-        for (int i = 0; i < 3; i++) {
+        for (int i = (wymiar - 1); i >= 0; i--) {
             int tmp = 1;
-            for (int j = 3; j > 0; --j) {
-                tmp *= macierz[j][(j + i) % 3];
+            for (int j = 0; j < wymiar; j++) {
+                tmp *= macierz[j][((wymiar - 1) - j + i) % wymiar];
             }
             value -= tmp;
         }
@@ -145,19 +158,57 @@ class Macierz {
 
     void transpozycja() {
         int tmp;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < wymiar; i++) {
+            for (int j = 0; j < wymiar; j++) {
+                if (j < i) {
+                    continue;
+                }
                 tmp = macierz[i][j];
                 macierz[i][j] = macierz[j][i];
                 macierz[j][i] = tmp;
             }
         }
     }
+
+    Macierz dodaj(Macierz m) {
+        Macierz wynik = new Macierz();
+        for (int i = 0; i < wymiar; i++) {
+            for (int j = 0; j < wymiar; j++) {
+                wynik.set(j, i, macierz[i][j] + m.get(j, i));
+            }
+        }
+        return wynik;
+    }
+
+    Macierz odejmij(Macierz m) {
+        Macierz wynik = new Macierz();
+        for (int i = 0; i < wymiar; i++) {
+            for (int j = 0; j < wymiar; j++) {
+                wynik.set(j, i, macierz[i][j] - m.get(j, i));
+            }
+        }
+        return wynik;
+    }
+
+    Macierz pomnoz(Macierz m) {
+        Macierz wynik = new Macierz();
+        for (int i = 0; i < wymiar; i++) {
+            for (int j = 0; j < wymiar; j++) {
+                int tmp = 0;
+                for (int k = 0; k < wymiar; k++) {
+                    tmp += macierz[k][i] * m.get(k, j);
+                }
+                wynik.set(i, j, tmp);
+            }
+        }
+        return wynik;
+    }
 }
 
 public class Main {
     public static void main(String[] args) {
         // Testowanie klasy Ułamek
+        System.out.println("\t######\n\tULAMEK\n\t######");
         Ulamek obj, obj2;
         obj = new Ulamek(6, 8);
         System.out.println("obj1: " + obj);
@@ -182,6 +233,7 @@ public class Main {
         System.out.println("obj1 skrocony: " + obj);
 
         // Testowanie klasy BigLiczba
+        System.out.println("\t#########\n\tBIGLICZBA\n\t#########");
         BigLiczba niePierwszaA = new BigLiczba(252);
         BigLiczba niePierwszaB = new BigLiczba(63);
         BigLiczba pierwszaA = new BigLiczba(251);
@@ -195,6 +247,7 @@ public class Main {
         System.out.println("true: " + pierwszaB.czyPierwsza());
 
         // Testowanie klasy Macierz
+        System.out.println("\t#######\n\tMACIERZ\n\t#######");
         try {
             int[][] mArrErr1 = { { 1, 2, 3 } };
             new Macierz(mArrErr1);
@@ -209,11 +262,26 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Pass: " + e);
         }
-        int[][] mArr = { { 4, 2, 1 }, { 5, 2, 1 }, { 6, 4, 1 } };
+        int[][] mArr = { { 4, 2, 1 }, { 5, 2, 7 }, { 6, 4, 1 } };
         Macierz m1 = new Macierz(mArr); // wyznacznik -22
         System.out.println(m1);
 
         System.out.println("Wyznacznik macierzy -22: " + m1.wyznacznik());
 
+        Macierz m2 = new Macierz();
+        System.out.println("Wyznacznik macierzy 0: " + m2.wyznacznik());
+
+        m2.set(1, 0, 3);
+        m2.set(2, 1, 8);
+        m2.set(0, 2, 1);
+        System.out.println("Wyznacznik macierzy 24: " + m2.wyznacznik());
+
+        System.out.println("Przed transpozycją:\n" + m2);
+        m2.transpozycja();
+        System.out.println("Po transpozycji:\n" + m2);
+
+        System.out.println("Dodawanie macierzy:\n" + m1 + "\n" + m2 + "\n" + m1.dodaj(m2));
+        System.out.println("Odejmowanie macierzy:\n" + m1 + "\n" + m2 + "\n" + m1.odejmij(m2));
+        System.out.println("Mnozenie macierzy:\n" + m1 + "\n" + m2 + "\n" + m1.pomnoz(m2));
     }
 }
