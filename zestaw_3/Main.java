@@ -18,79 +18,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 /**
- * RsaReader
- */
-class RsaReader {
-  private String privateKeyFilename = "private.key";
-  private String dataFilename = "data.data";
-
-  RsaReader() {
-    new RsaReader(dataFilename);
-  }
-
-  RsaReader(String dataFilename) {
-    new RsaReader(dataFilename, privateKeyFilename);
-  }
-
-  RsaReader(String dataFilename, String privateKeyFilename) {
-  }
-
-  public String decryptFile() throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException,
-      NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
-    return decryptFile(dataFilename);
-  }
-
-  public String decryptFile(String dataFilename) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException,
-      NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-    File privateKeyFile = new File(privateKeyFilename);
-    File dataFile = new File(dataFilename);
-
-    if (!privateKeyFile.exists()) {
-      privateKeyFile.getParentFile().mkdirs();
-      privateKeyFile.createNewFile();
-    }
-
-    if (!dataFile.exists()) {
-      dataFile.getParentFile().mkdirs();
-      dataFile.createNewFile();
-    }
-
-    FileInputStream privateKeyFileReader = new FileInputStream(privateKeyFile);
-    byte[] privateKeyBytes = privateKeyFileReader.readAllBytes();
-    privateKeyFileReader.close();
-
-    FileInputStream dataFileReader = new FileInputStream(dataFile);
-    byte[] dataFileBytes = dataFileReader.readAllBytes();
-    dataFileReader.close();
-
-    PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
-
-    Cipher cipher = Cipher.getInstance("RSA");
-    cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
-    dataFileBytes = cipher.doFinal(dataFileBytes);
-
-    return new String(dataFileBytes);
-  }
-
-  public String getDataFilename() {
-    return dataFilename;
-  }
-
-  public void setDataFilename(String dataFilename) {
-    this.dataFilename = dataFilename;
-  }
-
-  public String getPrivateKeyFilename() {
-    return privateKeyFilename;
-  }
-
-  public void setPrivateKeyFilename(String privateKeyFilename) {
-    this.privateKeyFilename = privateKeyFilename;
-  }
-}
-
-/**
  * RsaWriter
  */
 class RsaWriter {
@@ -225,6 +152,79 @@ class RsaWriter {
     this.dataFilename = dataFilename;
   }
 
+}
+
+/**
+ * RsaReader
+ */
+class RsaReader {
+  private String privateKeyFilename = "private.key";
+  private String dataFilename = "data.data";
+
+  RsaReader() {
+    new RsaReader(dataFilename);
+  }
+
+  RsaReader(String dataFilename) {
+    new RsaReader(dataFilename, privateKeyFilename);
+  }
+
+  RsaReader(String dataFilename, String privateKeyFilename) {
+  }
+
+  public String decryptFile() throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException,
+      NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+    return decryptFile(dataFilename);
+  }
+
+  public String decryptFile(String dataFilename) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException,
+      NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    File privateKeyFile = new File(privateKeyFilename);
+    File dataFile = new File(dataFilename);
+
+    if (!privateKeyFile.exists()) {
+      privateKeyFile.getParentFile().mkdirs();
+      privateKeyFile.createNewFile();
+    }
+
+    if (!dataFile.exists()) {
+      dataFile.getParentFile().mkdirs();
+      dataFile.createNewFile();
+    }
+
+    FileInputStream privateKeyFileReader = new FileInputStream(privateKeyFile);
+    byte[] privateKeyBytes = privateKeyFileReader.readAllBytes();
+    privateKeyFileReader.close();
+
+    FileInputStream dataFileReader = new FileInputStream(dataFile);
+    byte[] dataFileBytes = dataFileReader.readAllBytes();
+    dataFileReader.close();
+
+    PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+
+    Cipher cipher = Cipher.getInstance("RSA");
+    cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+    dataFileBytes = cipher.doFinal(dataFileBytes);
+
+    return new String(dataFileBytes);
+  }
+
+  public String getDataFilename() {
+    return dataFilename;
+  }
+
+  public void setDataFilename(String dataFilename) {
+    this.dataFilename = dataFilename;
+  }
+
+  public String getPrivateKeyFilename() {
+    return privateKeyFilename;
+  }
+
+  public void setPrivateKeyFilename(String privateKeyFilename) {
+    this.privateKeyFilename = privateKeyFilename;
+  }
 }
 
 public class Main {
