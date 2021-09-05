@@ -27,7 +27,17 @@ public class TestEncryption {
         }
 
         try {
-            writer.encryptString("test");
+            writer.writeFile("I Loooooooove Ciphers!");
+        } catch (Exception e) {
+            System.out.print("ERROR: Something went wrong with writing file: ");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        writer.setPublicKeyFilename("mydata/public.key");
+
+        try {
+            writer.encryptFile();;
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException
                 | IllegalBlockSizeException | BadPaddingException | IOException e) {
             System.out.print("ERROR: Something went wrong with encrypting file: ");

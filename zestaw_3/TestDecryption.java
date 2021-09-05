@@ -16,6 +16,8 @@ public class TestDecryption {
 
         reader.setDataFilename("wrongname2.data");
 
+        reader.setPrivateKeyFilename("mydata/private.key");
+
         try {
             System.out.println(reader.decryptFile("lorem.data"));
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException

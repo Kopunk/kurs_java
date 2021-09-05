@@ -78,7 +78,7 @@ class RsaWriter {
     File dataFile = new File(dataFilename);
 
     if (!dataFile.exists()) {
-      dataFile.getParentFile().mkdirs();
+      // dataFile.getParentFile().mkdirs();
       dataFile.createNewFile();
     }
 
@@ -93,11 +93,35 @@ class RsaWriter {
     encryptString(dataString, dataFilename);
   }
 
-  void writeKeyPair() throws Exception {
+  public void writeFile(String data) throws IOException {
+    writeFile(dataFilename, data);
+  }
+
+  /**
+   * writeFile Writes string in form of bytes to a file. File can be then
+   * encrypted with encryptFile method.
+   */
+  public void writeFile(String filename, String data) throws IOException {
+    File file = new File(filename);
+
+    if (!file.exists()) {
+      // file.getParentFile().mkdirs();
+      file.createNewFile();
+    }
+
+    byte[] dataBytes = data.getBytes();
+
+    FileOutputStream fileWriter = new FileOutputStream(file);
+    fileWriter.write(dataBytes);
+    fileWriter.close();
+  }
+
+  public void writeKeyPair() throws Exception {
     writeKeyPair(privateKeyFilename, publicKeyFilename);
   }
 
-  void writeKeyPair(String privateKeyFilename, String publicKeyFilename) throws NoSuchAlgorithmException, IOException {
+  public void writeKeyPair(String privateKeyFilename, String publicKeyFilename)
+      throws NoSuchAlgorithmException, IOException {
     File privateKeyFile = new File(privateKeyFilename);
     File publicKeyFile = new File(publicKeyFilename);
 
@@ -183,12 +207,12 @@ class RsaReader {
     File dataFile = new File(dataFilename);
 
     if (!privateKeyFile.exists()) {
-      privateKeyFile.getParentFile().mkdirs();
+      // privateKeyFile.getParentFile().mkdirs();
       privateKeyFile.createNewFile();
     }
 
     if (!dataFile.exists()) {
-      dataFile.getParentFile().mkdirs();
+      // dataFile.getParentFile().mkdirs();
       dataFile.createNewFile();
     }
 
