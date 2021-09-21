@@ -4,7 +4,7 @@
  *  ODP: Konstruktory nie są dziedziczone ale mogą być wywoływane przez podklasy przy pomocy super()
  * 4.4 Klasy abstrakcyjne 
  * 4.5 Interfejsy
- * 4.7 Polimorfizm
+ * 4.7 Polimorfizm - W PLIKU Symulacja.java
  */
 
 import java.awt.Rectangle;
@@ -189,8 +189,6 @@ class DowodOsobisty extends Dokument {
         return "Dowód osobisty: " + osoba.toString();
     }
 }
-
-// ===== 4.7 =====
 
 public class Main {
     public static void main(String[] args) {
