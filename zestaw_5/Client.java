@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-class Client {
+class Client extends ThreadLogger {
     private final int port;
     private final Socket clientSocket;
     Scanner scanner;
@@ -20,29 +20,30 @@ class Client {
 
         scanner = new Scanner(System.in);
 
-        while (true) {
+        do {
+            System.out.print(">>> ");
             message = new Message(scanner.nextLine());
-            if (message.getCode() == "EXIT") {
-                break;
-            }
             dataOutputStream.writeUTF(message.toString());
             dataOutputStream.flush();
-        }
+
+        } while (message.toString().startsWith(Message.EXIT));
+
+        dataOutputStream.writeUTF(new Message(Message.EXIT).toString());
+        dataOutputStream.flush();
 
         dataOutputStream.close();
         clientSocket.close();
     }
 
-    class Receiver extends Thread {
+    class Receiver extends ThreadLogger {
         public void run() {
             try {
                 DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
                 while (!clientSocket.isClosed()) {
-                    System.out.println(dataInputStream.readUTF());
+                    System.out.println("+++ " + dataInputStream.readUTF());
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log("ERROR: IOException: " + e);
             }
         }
 

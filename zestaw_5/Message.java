@@ -1,13 +1,15 @@
-public class Message {
+class Message {
     static String codePrefix = "CODE:";
     String message;
+
+    static String EXIT = "EXIT";
 
     Message() {
         this.message = " ";
     }
 
     Message(String message) {
-        if (message.toLowerCase() == "exit") {
+        if (message.toUpperCase() == EXIT) {
             message = codePrefix + "1";
         }
         this.message = message;
@@ -28,7 +30,7 @@ public class Message {
         if (code == '0') {
             return "OK";
         } else if (code == '1') {
-            return "EXIT";
+            return EXIT;
         } else {
             return "ERROR";
         }

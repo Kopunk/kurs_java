@@ -2,131 +2,115 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
-class Server extends Thread {
+class Server extends ThreadLogger {
     final ServerSocket serverSocket;
-    private final int port;
     LinkedList<Connection> clientList;
     LinkedList<Message> messageQueue;
 
+    Broadcaster broadcaster;
+
     Server(int port) throws IOException {
-        this.port = port;
+        logStart();
         serverSocket = new ServerSocket(port);
+
         clientList = new LinkedList<Connection>();
         messageQueue = new LinkedList<Message>();
-        new Broadcaster().start();
+
+        broadcaster = new Broadcaster();
+        broadcaster.start();
+
+        do {
+            log("waiting for new clients");
+            Socket clientSocket = serverSocket.accept(); // blocks
+
+            clientList.addLast(new Connection(clientSocket));
+        } while (!clientList.isEmpty());
+
+        log("closing server socket");
+        serverSocket.close();
     }
 
-    public void run() {
-        try {
-            while (true) {
-                Socket clientSocket = serverSocket.accept(); // blocks
-
-                clientList.addLast(new Connection(clientSocket));
-                clientList.getLast().start();
-
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-
-        } finally {
-            closeServer();
-        }
-    }
-
-    public void closeServer() {
-        // TODO implement
-        while (!clientList.isEmpty()) {
-            clientList.pop().closeConnection();
-        }
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    class Connection extends Thread {
+    class Connection extends ThreadLogger {
         Socket clientSocket;
 
         InputStream inputStream;
         DataInputStream dataInputStream;
 
+        DataOutputStream dataOutputStream;
+
         Message inputMessage;
 
-        Connection(Socket clientSocket) {
+        Connection(Socket clientSocket) throws IOException {
+            logStart();
             this.clientSocket = clientSocket;
+            this.dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+
+            this.start();
         }
 
         public void run() {
             try {
-                clientSocket = serverSocket.accept();
-
                 inputStream = clientSocket.getInputStream();
                 dataInputStream = new DataInputStream(inputStream);
 
-                inputMessage = new Message(dataInputStream.readUTF());
+                do {
+                    log("reading messages from: " + clientSocket);
+                    inputMessage = new Message(dataInputStream.readUTF());
 
-                while (inputMessage.getCode() != "EXIT") {
                     if (!inputMessage.isCode()) {
-                        messageQueue.add(inputMessage);
+                        messageQueue.addLast(inputMessage);
                     }
-                }
+                } while (inputMessage.getCode() != Message.EXIT);
 
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                closeConnection();
-            }
-        }
+                messageQueue.addLast(new Message(clientSocket + " left"));
 
-        void closeConnection() {
-            try {
+                dataOutputStream.close();
                 clientSocket.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log("ERROR: IO Exception: " + e);
+            } finally {
+                clientList.remove(this);
             }
         }
 
-        Socket getSocket() {
-            return clientSocket;
+        DataOutputStream getDataOutputStream() {
+            return dataOutputStream;
         }
     }
 
-    class Broadcaster extends Thread {
+    class Broadcaster extends ThreadLogger {
         public void run() {
-            while (clientList.isEmpty()) {
+            logStart();
+            while (messageQueue.isEmpty()) {
+                try {
+                    sleep(10);
+                } catch (InterruptedException e) {
+                    log("ERROR: InterruptedException: " + e);
+                }
             }
             while (!clientList.isEmpty()) {
+                try {
+                    sleep(10);
+                } catch (InterruptedException e1) {
+                    log("ERROR: InterruptedException: " + e1);
+                }
+                log("broadcasting message: " + messageQueue.getFirst().toString());
                 while (!messageQueue.isEmpty()) {
                     for (Connection client : clientList) {
                         try {
-                            DataOutputStream dataOutputStream = new DataOutputStream(client.getSocket().getOutputStream());
-                            dataOutputStream.writeUTF(messageQueue.getFirst().toString());
-                            dataOutputStream.flush();
-                            dataOutputStream.close();
+                            client.getDataOutputStream().writeUTF(messageQueue.getFirst().toString());
+                            client.getDataOutputStream().flush();
                         } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            log("ERROR: IO Exception: " + e);
                         }
-
                     }
                     messageQueue.removeFirst();
                 }
             }
-
         }
     }
 }
