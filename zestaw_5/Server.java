@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -25,9 +26,13 @@ class Server extends ThreadLogger {
 
         do {
             log("waiting for new clients");
-            Socket clientSocket = serverSocket.accept(); // blocks
+            try {
+                Socket clientSocket = serverSocket.accept(); // blocks
+                clientList.addLast(new Connection(clientSocket));
+            } catch (Exception e) {
+                log("accepting connections canceled");
+            }
 
-            clientList.addLast(new Connection(clientSocket));
         } while (!clientList.isEmpty());
 
         log("closing server socket");
@@ -64,16 +69,27 @@ class Server extends ThreadLogger {
                     if (!inputMessage.isCode()) {
                         messageQueue.addLast(inputMessage);
                     }
-                } while (inputMessage.getCode() != Message.EXIT);
+                } while (inputMessage.toString() != Message.EXIT);
 
-                messageQueue.addLast(new Message(clientSocket + " left"));
+                // messageQueue.addLast(new Message(clientSocket + " left"));
 
                 dataOutputStream.close();
                 clientSocket.close();
             } catch (IOException e) {
-                log("ERROR: IO Exception: " + e);
+                if (e.getClass().equals(EOFException.class)) {
+                    log("client disconnected");
+                } else {
+                    log("ERROR: IO Exception: " + e);
+                }
             } finally {
                 clientList.remove(this);
+            }
+            if (clientList.isEmpty()) {
+                try {
+                    serverSocket.close();
+                } catch (Exception e) {
+                    log("close server");
+                }
             }
         }
 
@@ -98,8 +114,9 @@ class Server extends ThreadLogger {
                 } catch (InterruptedException e1) {
                     log("ERROR: InterruptedException: " + e1);
                 }
-                log("broadcasting message: " + messageQueue.getFirst().toString());
                 while (!messageQueue.isEmpty()) {
+
+                    log("broadcasting message: " + messageQueue.getFirst().toString());
                     for (Connection client : clientList) {
                         try {
                             client.getDataOutputStream().writeUTF(messageQueue.getFirst().toString());

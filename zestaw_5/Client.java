@@ -1,4 +1,5 @@
 import java.io.DataInputStream;
+import java.io.InputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -21,12 +22,12 @@ class Client extends ThreadLogger {
         scanner = new Scanner(System.in);
 
         do {
-            System.out.print(">>> ");
+            // System.out.print(">>> ");
             message = new Message(scanner.nextLine());
             dataOutputStream.writeUTF(message.toString());
             dataOutputStream.flush();
 
-        } while (message.toString().startsWith(Message.EXIT));
+        } while (!message.toString().startsWith(Message.EXIT));
 
         dataOutputStream.writeUTF(new Message(Message.EXIT).toString());
         dataOutputStream.flush();
@@ -36,14 +37,21 @@ class Client extends ThreadLogger {
     }
 
     class Receiver extends ThreadLogger {
+        DataInputStream dataInputStream;
+
         public void run() {
             try {
-                DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
+                dataInputStream = new DataInputStream(clientSocket.getInputStream());
+                log("reading messages");
                 while (!clientSocket.isClosed()) {
                     System.out.println("+++ " + dataInputStream.readUTF());
                 }
             } catch (IOException e) {
-                log("ERROR: IOException: " + e);
+                if (e.toString().contains("Socket closed")) {
+                    log("closed Receiver");
+                } else {
+                    log("ERROR: IOException: " + e);
+                }
             }
         }
 
