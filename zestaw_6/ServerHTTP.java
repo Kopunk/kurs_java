@@ -1,23 +1,27 @@
 import java.io.*;
 import java.net.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
-public class ServerHTTP {
+class ObslugaZadania extends Thread {
+   Socket sock;
    final static String htmlFileName = "index.html";
 
-   public static void main(String[] args) throws IOException {
-      ServerSocket serv = new ServerSocket(8080);
+   ObslugaZadania(Socket klientSocket) {
+      this.sock = klientSocket;
+   }
 
-      while (true) {
-         // przyjecie polaczenia
-         System.out.println("Oczekiwanie na polaczenie...");
-         Socket sock = serv.accept();
+   public void run() {
 
-         // strumienie danych
-         InputStream is = sock.getInputStream();
-         OutputStream os = sock.getOutputStream();
+      // strumienie danych
+      InputStream is;
+      OutputStream os;
+      try {
+         is = sock.getInputStream();
+         os = sock.getOutputStream();
          BufferedReader inp = new BufferedReader(new InputStreamReader(is));
          DataOutputStream outp = new DataOutputStream(os);
-
          // przyjecie zadania (request)
          String request = inp.readLine();
          System.out.println(request);
@@ -68,6 +72,69 @@ public class ServerHTTP {
          inp.close();
          outp.close();
          sock.close();
+      } catch (IOException e1) {
+         // TODO Auto-generated catch block
+         e1.printStackTrace();
+      }
+
+   }
+}
+
+public class ServerHTTP {
+
+   public static void main(String[] args) throws IOException {
+      Scanner scanner = new Scanner(System.in);
+      String portStr;
+      int port = 8080;
+      ServerSocket serv;
+      DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss - ");
+      LocalDateTime dateTime = LocalDateTime.now();
+      String dateStr = dateTime.format(dateFormatter);
+      File logFile = new File("server.log");
+      FileWriter fileWriter = new FileWriter(logFile, true);
+      BufferedWriter bufferedWriter;
+
+      try {
+         logFile.createNewFile();
+         System.out.println("zapisywanie log do: " + logFile.getName());
+      } catch (IOException e) {
+         System.out.println("plik logów już istnieje");
+         e.printStackTrace();
+      }
+
+      do {
+         System.out.print("podaj port: ");
+         portStr = scanner.nextLine();
+         try {
+            port = Integer.parseInt(portStr);
+         } catch (Exception e) {
+            System.out.println("podaj prawidlowa liczbe");
+            continue;
+         }
+         try {
+            serv = new ServerSocket(port);
+            break;
+         } catch (java.net.BindException e) {
+            System.out.println("port zajety");
+         }
+
+      } while (true);
+
+      serv.close();
+      serv = new ServerSocket(port);
+
+      while (true) {
+         // przyjecie polaczenia
+         System.out.println("Oczekiwanie na polaczenie...");
+         Socket sock = serv.accept();
+         new ObslugaZadania(sock).start();
+
+         bufferedWriter = new BufferedWriter(fileWriter);
+         dateTime = LocalDateTime.now();
+         dateStr = dateTime.format(dateFormatter);
+         bufferedWriter.write(dateStr + "client connected from: " + sock.getLocalAddress() + " browser: ");
+         // bufferedWriter.close();
+
       }
    }
 }
