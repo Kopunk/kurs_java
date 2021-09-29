@@ -7,9 +7,31 @@ import java.util.Scanner;
 class ObslugaZadania extends Thread {
    Socket sock;
    final static String htmlFileName = "index.html";
+   DateTimeFormatter dateFormatter;
+   LocalDateTime dateTime;
+   String dateStr;
+   File logFile;
+   FileWriter fileWriter;
+   BufferedWriter bufferedWriter;
+
+   String userAgent = "";
 
    ObslugaZadania(Socket klientSocket) {
       this.sock = klientSocket;
+
+      dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss - ");
+      dateTime = LocalDateTime.now();
+      dateStr = dateTime.format(dateFormatter);
+      logFile = new File("server.log");
+
+      try {
+         logFile.createNewFile();
+         System.out.println("zapisywanie log do: " + logFile.getName());
+      } catch (IOException e) {
+         System.out.println("plik logów już istnieje");
+         e.printStackTrace();
+      }
+
    }
 
    public void run() {
@@ -26,7 +48,11 @@ class ObslugaZadania extends Thread {
          String request = inp.readLine();
          System.out.println(request);
          do {
-            System.out.println(inp.readLine());
+            String readLine = inp.readLine();
+            System.out.println(readLine);
+            if (readLine.startsWith("User-Agent")) {
+               userAgent = readLine.replace("User-Agent", "");
+            }
          } while (inp.ready());
 
          System.out.println("odp:");
@@ -67,6 +93,7 @@ class ObslugaZadania extends Thread {
          }
 
          System.out.println("przegladarka zada: " + request.split(" ")[1]);
+         log();
 
          // zamykanie strumieni
          inp.close();
@@ -78,6 +105,22 @@ class ObslugaZadania extends Thread {
       }
 
    }
+
+   void log() {
+
+      try {
+         fileWriter = new FileWriter(logFile, true);
+         bufferedWriter = new BufferedWriter(fileWriter);
+         dateTime = LocalDateTime.now();
+         dateStr = dateTime.format(dateFormatter);
+         bufferedWriter.write(dateStr + "client connected from: " + userAgent + "\n");
+         bufferedWriter.close();
+         fileWriter.close();
+
+      } catch (IOException e) {
+         System.out.println("blad w zapisie logow do pliku");
+      }
+   }
 }
 
 public class ServerHTTP {
@@ -87,20 +130,6 @@ public class ServerHTTP {
       String portStr;
       int port = 8080;
       ServerSocket serv;
-      DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss - ");
-      LocalDateTime dateTime = LocalDateTime.now();
-      String dateStr = dateTime.format(dateFormatter);
-      File logFile = new File("server.log");
-      FileWriter fileWriter = new FileWriter(logFile, true);
-      BufferedWriter bufferedWriter;
-
-      try {
-         logFile.createNewFile();
-         System.out.println("zapisywanie log do: " + logFile.getName());
-      } catch (IOException e) {
-         System.out.println("plik logów już istnieje");
-         e.printStackTrace();
-      }
 
       do {
          System.out.print("podaj port: ");
@@ -127,13 +156,8 @@ public class ServerHTTP {
          // przyjecie polaczenia
          System.out.println("Oczekiwanie na polaczenie...");
          Socket sock = serv.accept();
-         new ObslugaZadania(sock).start();
 
-         bufferedWriter = new BufferedWriter(fileWriter);
-         dateTime = LocalDateTime.now();
-         dateStr = dateTime.format(dateFormatter);
-         bufferedWriter.write(dateStr + "client connected from: " + sock.getLocalAddress() + " browser: ");
-         // bufferedWriter.close();
+         new ObslugaZadania(sock).start();
 
       }
    }
