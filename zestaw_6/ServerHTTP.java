@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
+import javax.net.ssl.SSLServerSocketFactory;
+
 class ObslugaZadania extends Thread {
    Socket sock;
    final static String htmlFileName = "index.html";
@@ -66,8 +68,6 @@ class ObslugaZadania extends Thread {
                // response header
                outp.writeBytes("HTTP/1.0 200 OK\r\n");
 
-               System.out.println(fis.toString());
-
                String contentType = (htmlFileName.endsWith(".html") || htmlFileName.endsWith(".htm")) ? "text/html"
                      : "";
                outp.writeBytes("Content-Type: " + contentType + "\r\n");
@@ -100,8 +100,7 @@ class ObslugaZadania extends Thread {
          outp.close();
          sock.close();
       } catch (IOException e1) {
-         // TODO Auto-generated catch block
-         e1.printStackTrace();
+         System.out.println("blad w watku obslugi klienta");
       }
 
    }
@@ -113,7 +112,10 @@ class ObslugaZadania extends Thread {
          bufferedWriter = new BufferedWriter(fileWriter);
          dateTime = LocalDateTime.now();
          dateStr = dateTime.format(dateFormatter);
-         bufferedWriter.write(dateStr + "client connected from: " + userAgent + "\n");
+
+         String ip = (((InetSocketAddress) sock.getRemoteSocketAddress()).getAddress()).toString().replace("/", "");
+
+         bufferedWriter.write(dateStr + "client connected from" + userAgent + "; IP: " + ip + "\n");
          bufferedWriter.close();
          fileWriter.close();
 
@@ -131,6 +133,9 @@ public class ServerHTTP {
       int port = 8080;
       ServerSocket serv;
 
+      SSLServerSocketFactory fact;
+      fact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
       do {
          System.out.print("podaj port: ");
          portStr = scanner.nextLine();
@@ -141,7 +146,7 @@ public class ServerHTTP {
             continue;
          }
          try {
-            serv = new ServerSocket(port);
+            serv = fact.createServerSocket(port);
             break;
          } catch (java.net.BindException e) {
             System.out.println("port zajety");
