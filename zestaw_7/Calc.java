@@ -1,14 +1,19 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
-public class Calc implements ActionListener {
+public class Calc implements ActionListener, KeyListener {
     JTextField textField;
     JButton[] digitButtons;
     JButton undoButton, clearButton, clearAllButton, memoryPlusButton, memoryMinusButton, memoryClearButton,
             memoryRecallButton, divButton, multButton, plusButton, minusButton, sqrButton, sqrtButton, eqButton,
-            percentButton, commaButton;
+            modButton, commaButton, leftParButton, rightParButton;
 
     JFrame frame;
     Container container;
@@ -16,13 +21,119 @@ public class Calc implements ActionListener {
     GridBagLayout gridLayout;
     GridBagConstraints gridConstraints;
 
-    public void actionPerformed(ActionEvent actionEvent) {
+    KeyListener keyListener;
+
+    Font font;
+
+    LinkedList<String> expressionHistory;
+
+    File calcLog;
+    FileWriter calcLogWriter;
+    LinkedList<String> expressionLog;
+
+    final static String UNDO_STRING = "\u2190";
+    final static String SQRT_STRING = "\u221A";
+    final static String SQR_STRING = "\u00B2";
+
+    final static String allowedKeys = "1234567890+-*/%.()";
+
+    String expression = "";
+    String expressionOld = expression;
+    Double result;
+    Double memory = .0;
+
+    public void keyTyped(KeyEvent keyEvent) {
+        String keyStr = Character.toString(keyEvent.getKeyChar());
+        if (allowedKeys.contains(keyStr)) {
+            inputAction(new JButton(keyStr));
+        }
 
     }
 
+    public void keyPressed(KeyEvent keyEvent) {
+        if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
+            inputAction(eqButton);
+        } else if (keyEvent.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+            inputAction(undoButton);
+        }
+    }
+
+    public void keyReleased(KeyEvent keyEvent) {
+    }
+
+    public void actionPerformed(ActionEvent actionEvent) {
+        JButton target = (JButton) actionEvent.getSource();
+        inputAction(target);
+    }
+
+    void inputAction(JButton target) {
+        if (target == eqButton) {
+            result = new ExpressionEvaluator(expression, ExpressionEvaluator.EXPRESSIONTYPE.Infix).GetValue();
+
+            expressionLog.addLast(expression + " = " + result.toString());
+
+            expression = result.toString();
+
+        } else if (target == commaButton) {
+            expression += ".";
+
+        } else if (target == memoryClearButton) {
+            memory = .0;
+
+        } else if (target == memoryRecallButton) {
+            expression += "(" + memory.toString() + ")";
+
+        } else if (target == memoryPlusButton) {
+            memory += new ExpressionEvaluator(expression, ExpressionEvaluator.EXPRESSIONTYPE.Infix).GetValue();
+
+        } else if (target == memoryMinusButton) {
+            memory -= new ExpressionEvaluator(expression, ExpressionEvaluator.EXPRESSIONTYPE.Infix).GetValue();
+
+        } else if (target == sqrtButton) {
+            expression += "^(1/2)";
+
+        } else if (target == sqrButton) {
+            expression += "^2";
+
+        } else if (target == modButton) {
+            expression += "%";
+
+        } else if (target == clearAllButton) {
+            expression = "";
+            memory = .0;
+
+        } else if (target == clearButton) {
+            expression = "";
+
+        } else if (target == undoButton) {
+            if (!expressionHistory.isEmpty()) {
+                expression = expressionHistory.removeLast();
+
+            }
+
+        } else {
+            expression += target.getText();
+        }
+
+        if (target != undoButton) {
+            expressionHistory.addLast(expression);
+        }
+
+        if (!expressionHistory.isEmpty()) {
+            textField.setText(expressionHistory.getLast());
+        }
+    }
+
     void init() {
+        expressionHistory = new LinkedList<String>();
+        expressionLog = new LinkedList<String>();
+
         frame = new JFrame();
         container = frame.getContentPane();
+
+        frame.setFocusable(true);
+        frame.requestFocus();
+        frame.addKeyListener(this);
 
         gridLayout = new GridBagLayout();
         gridConstraints = new GridBagConstraints();
@@ -33,15 +144,19 @@ public class Calc implements ActionListener {
 
         digitButtons = new JButton[10];
 
+        font = new Font("SansSerif", Font.BOLD, 20);
+
         // text field
         textField = new JTextField(5);
         textField.addActionListener(this);
         textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setFont(font);
+        textField.setEditable(false);
         gridConstraints.gridx = 0;
         gridConstraints.gridy = 0;
         gridConstraints.gridwidth = 5;
         gridConstraints.gridheight = 1;
-        gridConstraints.insets = new Insets(5, 5, 5, 5);
+        gridConstraints.insets = new Insets(15, 10, 5, 10);
         gridLayout.setConstraints(textField, gridConstraints);
         container.add(textField);
 
@@ -85,13 +200,13 @@ public class Calc implements ActionListener {
         gridLayout.setConstraints(memoryRecallButton, gridConstraints);
         container.add(memoryRecallButton);
 
-        // button: %
-        percentButton = new JButton("%");
-        percentButton.addActionListener(this);
-        percentButton.setFocusable(false);
+        // button: mod
+        modButton = new JButton("mod");
+        modButton.addActionListener(this);
+        modButton.setFocusable(false);
         gridConstraints.gridx = 4;
-        gridLayout.setConstraints(percentButton, gridConstraints);
-        container.add(percentButton);
+        gridLayout.setConstraints(modButton, gridConstraints);
+        container.add(modButton);
 
         // row 2
         gridConstraints.gridy = 2;
@@ -113,7 +228,7 @@ public class Calc implements ActionListener {
         container.add(clearButton);
 
         // button: <-
-        undoButton = new JButton("<--");
+        undoButton = new JButton(UNDO_STRING);
         undoButton.addActionListener(this);
         undoButton.setFocusable(false);
         gridConstraints.gridx = 2;
@@ -129,7 +244,7 @@ public class Calc implements ActionListener {
         container.add(divButton);
 
         // button: sqrt
-        sqrtButton = new JButton("sqrt");
+        sqrtButton = new JButton(SQRT_STRING);
         sqrtButton.addActionListener(this);
         sqrtButton.setFocusable(false);
         gridConstraints.gridx = 4;
@@ -172,7 +287,7 @@ public class Calc implements ActionListener {
         container.add(multButton);
 
         // button: x^2
-        sqrButton = new JButton("x^2");
+        sqrButton = new JButton("x" + SQR_STRING);
         sqrButton.addActionListener(this);
         sqrButton.setFocusable(false);
         gridConstraints.gridx = 4;
@@ -249,15 +364,25 @@ public class Calc implements ActionListener {
         gridLayout.setConstraints(digitButtons[3], gridConstraints);
         container.add(digitButtons[3]);
 
-        // button: =
-        eqButton = new JButton("=");
-        eqButton.addActionListener(this);
-        eqButton.setFocusable(false);
+        // button: (
+        leftParButton = new JButton("(");
+        leftParButton.addActionListener(this);
+        leftParButton.setFocusable(false);
         gridConstraints.gridx = 3;
-        gridConstraints.gridwidth = 2;
-        gridConstraints.gridheight = 2;
-        gridLayout.setConstraints(eqButton, gridConstraints);
-        container.add(eqButton);
+        gridConstraints.gridwidth = 1;
+        gridConstraints.gridheight = 1;
+        gridLayout.setConstraints(leftParButton, gridConstraints);
+        container.add(leftParButton);
+
+        // button: )
+        rightParButton = new JButton(")");
+        rightParButton.addActionListener(this);
+        rightParButton.setFocusable(false);
+        gridConstraints.gridx = 4;
+        gridConstraints.gridwidth = 1;
+        gridConstraints.gridheight = 1;
+        gridLayout.setConstraints(rightParButton, gridConstraints);
+        container.add(rightParButton);
 
         // row 6
         gridConstraints.gridy = 6;
@@ -282,12 +407,45 @@ public class Calc implements ActionListener {
         gridLayout.setConstraints(commaButton, gridConstraints);
         container.add(commaButton);
 
-
+        // button: =
+        eqButton = new JButton("=");
+        eqButton.addActionListener(this);
+        eqButton.setFocusable(false);
+        gridConstraints.gridx = 3;
+        gridConstraints.gridwidth = 2;
+        gridConstraints.gridheight = 1;
+        gridLayout.setConstraints(eqButton, gridConstraints);
+        container.add(eqButton);
 
         frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setTitle("Calc");
         frame.setVisible(true);
+
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent windowEvent) {
+                textField.setText("Saving history to file...");
+                calcLog = new File("calc-log.txt");
+
+                try {
+                    calcLog.createNewFile();
+                } catch (IOException e) {
+                    System.err.println("file already exsts");
+                }
+
+                try {
+                    calcLogWriter = new FileWriter(calcLog, true);
+                    for (String log : expressionLog) {
+                        calcLogWriter.write(log + "\n");
+                    }
+                    calcLogWriter.close();
+                } catch (IOException e1) {
+                    System.err.println("error writing to file: " + e1);
+                }
+
+                System.exit(0);
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -297,5 +455,4 @@ public class Calc implements ActionListener {
             }
         });
     }
-
 }
