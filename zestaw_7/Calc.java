@@ -7,6 +7,10 @@ import java.util.LinkedList;
 
 import javax.swing.*;
 
+/* Klasa ExpressionEvaluator:
+ * https://gist.github.com/JakeWharton/237462
+ */
+
 public class Calc implements ActionListener, KeyListener {
     JTextField textField;
     JButton[] digitButtons;
