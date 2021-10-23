@@ -251,33 +251,33 @@ class RsaReader {
   }
 }
 
-public class Main {
-  public static void main(String[] args) {
-    RsaWriter writer = new RsaWriter();
+// public class Main {
+//   public static void main(String[] args) {
+//     RsaWriter writer = new RsaWriter();
 
-    try {
-      writer.writeKeyPair();
-    } catch (Exception e1) {
-      System.out.print("ERROR: Something went wrong with writing key pair: ");
-      e1.printStackTrace();
-    }
+//     try {
+//       writer.writeKeyPair();
+//     } catch (Exception e1) {
+//       System.out.print("ERROR: Something went wrong with writing key pair: ");
+//       e1.printStackTrace();
+//     }
 
-    try {
-      writer.encryptString("Lorem Ipsum You Know How It Goes");
-    } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException
-        | IllegalBlockSizeException | BadPaddingException | IOException e) {
-      System.out.print("ERROR: Something went wrong with encryption: ");
-      e.printStackTrace();
-    }
+//     try {
+//       writer.encryptString("Lorem Ipsum You Know How It Goes");
+//     } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException
+//         | IllegalBlockSizeException | BadPaddingException | IOException e) {
+//       System.out.print("ERROR: Something went wrong with encryption: ");
+//       e.printStackTrace();
+//     }
 
-    RsaReader reader = new RsaReader();
+//     RsaReader reader = new RsaReader();
 
-    try {
-      System.out.println(reader.decryptFile());
-    } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException
-        | IllegalBlockSizeException | BadPaddingException | IOException e) {
-      System.out.print("ERROR: Something went wrong with decryption: ");
-      e.printStackTrace();
-    }
-  }
-}
+//     try {
+//       System.out.println(reader.decryptFile());
+//     } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException
+//         | IllegalBlockSizeException | BadPaddingException | IOException e) {
+//       System.out.print("ERROR: Something went wrong with decryption: ");
+//       e.printStackTrace();
+//     }
+//   }
+// }
