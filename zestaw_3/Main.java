@@ -251,7 +251,7 @@ class RsaReader {
   }
 }
 
-// public class Main {
+public class Main {
 //   public static void main(String[] args) {
 //     RsaWriter writer = new RsaWriter();
 
@@ -280,4 +280,4 @@ class RsaReader {
 //       e.printStackTrace();
 //     }
 //   }
-// }
+}
