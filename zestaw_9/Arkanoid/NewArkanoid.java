@@ -1,5 +1,6 @@
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 
 import javax.swing.JPanel;
 import javax.swing.JFrame;
@@ -23,11 +24,11 @@ class Ball extends Ellipse2D.Float {
     Ball(Board board, int deltaX, int deltaY) {
         this.board = board;
 
-        this.width = Integer.max(board.getWidth(), board.getHeight()) / 100;
+        this.width = 10; //Integer.max(board.getWidth(), board.getHeight()) / 100;
         this.height = this.width;
 
-        x = (int) (board.getWidth() / 2 - this.getCenterX());
-        y = (int) (board.getHeight() / 2 - this.getCenterY());
+        x = 15; //(int) (board.getWidth() / 2 - this.getCenterX());
+        y = 15; //(int) (board.getHeight() / 2 - this.getCenterY());
 
         this.deltaX = deltaX;
         this.deltaY = -deltaY; // makes the ball start moving upwards
@@ -43,6 +44,7 @@ class Ball extends Ellipse2D.Float {
             deltaY = -deltaY;
 
         board.repaint();
+        Toolkit.getDefaultToolkit().sync();
     }
 }
 
@@ -77,6 +79,7 @@ class Board extends JPanel implements MouseMotionListener, Runnable {
     Platform platform;
 
     Board() {
+        super();
         addMouseMotionListener(this);
 
         this.ball = new Ball(this);
@@ -109,6 +112,7 @@ class Board extends JPanel implements MouseMotionListener, Runnable {
                 Thread.sleep(15);
             }
         } catch (InterruptedException e) {
+            System.out.println(e);
         }
     }
 }
