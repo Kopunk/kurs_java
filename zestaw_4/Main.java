@@ -232,7 +232,7 @@ public class Main {
         System.out.println("\n===== 4.5 =====");
         Paszport p1 = new Paszport(new Osoba("Jan", "Nowak", 1994));
         Paszport p2 = new Paszport(new Osoba("Jan", "Duda", 1999));
-        Paszport p3 = new Paszport(new Osoba("Agnieszka", "Górniak", 2000));
+        DowodOsobisty p3 = new DowodOsobisty(new Osoba("Agnieszka", "Górniak", 2000));
         Paszport p4 = new Paszport(new Osoba("Marian", "Nowak", 2000));
         Dokument[] bazaDanych = { p1, p2, p3, p4 };
 
@@ -260,7 +260,5 @@ public class Main {
             if (z.czyPasuje(wzorzecInt))
                 System.out.println("znaleziono: " + z);
         }
-
-        System.out.println("\n===== 4.7 =====");
     }
 }
