@@ -20,6 +20,9 @@ class Plansza extends JPanel {
     RadialGradientPaint radialGradient;
     BufferedImage img;
     Color color1, color2;
+    Stroke stroke;
+    Stroke stroke2;
+    boolean rotateAndScale;
 
     Plansza(Shape figura) {
         this.figura = figura;
@@ -67,12 +70,35 @@ class Plansza extends JPanel {
         this.color2 = c2;
     }
 
+    public void setStroke(Stroke stroke) {
+        this.stroke = stroke;
+    }
+
+    public void setStroke2(Stroke stroke) {
+        this.stroke2 = stroke;
+    }
+
+    public void setRotateAndScale(boolean set) {
+        this.rotateAndScale = set;
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         g2d = (Graphics2D) g;
 
+        if (rotateAndScale == true) {
+            g2d.rotate(0.1); // 0.1 radian
+            g2d.scale(0.7, 0.7);
+        }
+
+        if (stroke != null) {
+            g2d.setPaint(new Color(0, 0, 255));
+            g2d.setStroke(stroke);
+        }
+
         g2d.draw(figura);
+
         if (isFill) {
             g2d.setPaint(new Color(0, 255, 0));
             g2d.fill(figura);
@@ -90,6 +116,11 @@ class Plansza extends JPanel {
         }
 
         if (figura2 != null) {
+            if (stroke2 != null) {
+                g2d.setPaint(new Color(0, 0, 255));
+                g2d.setStroke(stroke2);
+            }
+
             g2d.draw(figura2);
 
             if (color1 != null && color2 != null) {
@@ -260,15 +291,81 @@ public class Main {
 
         TimeUnit.SECONDS.sleep(sleepTimeS);
 
-        // cw 8.11
-        Shape luk2 = new Arc2D.Float(50, 50, 220, 150, 45, 190, Arc2D.OPEN);
-        p = new Plansza(luk);
+        // cw 8.11 1
+        Shape linia = new Line2D.Float(50, 50, 50, 300);
+        p = new Plansza(linia);
 
         jf.add(p);
         jf.setVisible(true);
 
         TimeUnit.SECONDS.sleep(sleepTimeS);
 
+        // cw 8.11 2
+        Shape linia2 = new Line2D.Float(90, 50, 90, 300);
+        p = new Plansza(linia2);
+
+        Stroke wzor1 = new BasicStroke(10);
+        p.setStroke(wzor1);
+
+        jf.add(p);
+        jf.setVisible(true);
+
+        TimeUnit.SECONDS.sleep(sleepTimeS);
+
+        // cw 8.11 3
+        Shape linia3 = new Line2D.Float(130, 50, 130, 300);
+        p = new Plansza(linia3);
+
+        Stroke wzor2 = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL);
+        p.setStroke(wzor2);
+
+        jf.add(p);
+        jf.setVisible(true);
+
+        TimeUnit.SECONDS.sleep(sleepTimeS);
+
+        // cw 8.11 4
+        Shape linia4 = new Line2D.Float(180, 50, 180, 300);
+        p = new Plansza(linia4);
+
+        Stroke wzor3 = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL, 20.0f,
+                new float[] { 10.0f, 15.0f, 35.0f, 45.0f }, 0.f);
+        p.setStroke(wzor3);
+
+        jf.add(p);
+        jf.setVisible(true);
+
+        TimeUnit.SECONDS.sleep(sleepTimeS);
+
+        // cw 8.12
+        Polygon wielobok = new Polygon(new int[] { 180, 260, 100 }, new int[] { 100, 220, 220 }, 3);
+        Polygon wielobok2 = new Polygon(new int[] { 180, 260, 100 }, new int[] { 100, 220, 220 }, 3);
+        wielobok2.translate(-40, -30);
+
+        p = new Plansza((Shape) wielobok, (Shape) wielobok2);
+
+        Stroke wzor4 = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        p.setStroke(wzor4);
+
+        Stroke wzor5 = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL);
+        p.setStroke2(wzor5);
+
+        jf.add(p);
+        jf.setVisible(true);
+
+        TimeUnit.SECONDS.sleep(sleepTimeS);
+
+        // cw 8.12 - rotacja i skalowanie
+        p = new Plansza((Shape) wielobok, (Shape) wielobok2);
+        p.setStroke(wzor4);
+        p.setStroke2(wzor5);
+
+        p.setRotateAndScale(true);
+
+        jf.add(p);
+        jf.setVisible(true);
+
+        TimeUnit.SECONDS.sleep(sleepTimeS);
 
     }
 }
