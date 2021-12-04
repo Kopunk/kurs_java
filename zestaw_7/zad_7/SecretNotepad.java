@@ -1,54 +1,51 @@
-import java.io.*;
-import java.security.*;
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 
-class DesTest {
-   public static void main(String args[]) throws Exception {
-      String msg = "pozdrowienia od cioci";
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
-      String passwd = "tajnehaslo";
-      byte[] b = passwd.getBytes();
+public class SecretNotepad extends JFrame {
 
-      // -- generowanie klucza --
-      System.out.println("tworzy generator kluczy");
-      KeyGenerator kgen = KeyGenerator.getInstance("DES");
-      kgen.init(new java.security.SecureRandom(b));
+   public SecretNotepad() {
+      initMenu();
 
-      System.out.println("generuje klucz");
-      SecretKey key = kgen.generateKey();
-
-      // -- szyfrowanie --
-      System.out.println("tworzy obiekt klasy Cipher");
-      javax.crypto.Cipher c1 = javax.crypto.Cipher.getInstance("DES");
-
-      System.out.println("inicjuje cipher do szyfrowania");
-      c1.init(Cipher.ENCRYPT_MODE, key);
-
-      ObjectOutputStream out;
-      out = new ObjectOutputStream(new CipherOutputStream(new FileOutputStream("plik.txt"), c1));
-      out.writeObject(msg);
-      out.flush();
-      out.close();
-
-      // -- deszyfrowanie --
-      System.out.println("tworzy obiekt klasy Cipher");
-      javax.crypto.Cipher c2 = javax.crypto.Cipher.getInstance("DES");
-
-      System.out.println("inicjuje cipher do deszyfrowania");
-      c2.init(Cipher.DECRYPT_MODE, key);
-
-      ObjectInputStream in;
-      in = new ObjectInputStream(new CipherInputStream(new FileInputStream("plik.txt"), c2));
-      String str = (String) in.readObject();
-      in.close();
-
-      System.out.println("\n-- " + str + " --\n");
+      setTitle("Secret Notepad");
+      setMinimumSize(new Dimension(500, 500));
+      setDefaultCloseOperation(EXIT_ON_CLOSE);
    }
-}
 
-public class SecretNotepad {
+   private void initMenu() {
+      JMenuBar menuBar = new JMenuBar();
+
+      JMenu fileMenu = new JMenu("File");
+      JMenuItem newFileMenuItem = new JMenuItem("New File");
+      JMenuItem openFileMenuItem = new JMenuItem("Open File");
+      JMenuItem saveFileMenuItem = new JMenuItem("Save");
+      fileMenu.add(newFileMenuItem);
+      fileMenu.add(openFileMenuItem);
+      fileMenu.add(saveFileMenuItem);
+
+      JMenu encryptionMenu = new JMenu("Encryption");
+      JMenuItem encryptFileMenuItem = new JMenuItem("Encrypt File");
+      JMenuItem decryptFileMenuItem = new JMenuItem("Decrypt File");
+      JMenuItem setPasswordMenuItem = new JMenuItem("Set Password");
+      encryptionMenu.add(encryptFileMenuItem);
+      encryptionMenu.add(decryptFileMenuItem);
+      encryptionMenu.add(setPasswordMenuItem);
+
+      menuBar.add(fileMenu);
+      menuBar.add(encryptionMenu);
+
+      setJMenuBar(menuBar);
+   }
+
    public static void main(String[] args) {
+      EventQueue.invokeLater(() -> {
+         SecretNotepad secretNotepad = new SecretNotepad();
+         secretNotepad.setVisible(true);
+      });
 
    }
 }
