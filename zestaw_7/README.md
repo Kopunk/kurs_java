@@ -8,6 +8,8 @@ Historia operacji zapisywana jest do pliku `calc-log.txt`
 
 Jako parser wyrażeń matematycznych została wykrzystana klasa [ExpressionEvaluator](https://gist.github.com/JakeWharton/237462)
 
+Podczas użytkowania kalkulator tworzy 'historię' działań, przez co przyciskiem `<-` można cofać się nawet do poprzednich działań (a nie tylko usuwać ostatni wstawiony znak).
+
 Użytkowanie:
 ```
 javac Calc.java
