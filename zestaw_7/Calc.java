@@ -110,8 +110,8 @@ public class Calc implements ActionListener, KeyListener {
 
         } else if (target == undoButton) {
             if (!expressionHistory.isEmpty()) {
-                expression = expressionHistory.removeLast();
-
+                expressionHistory.removeLast();
+                expression = expressionHistory.getLast();
             }
 
         } else {
