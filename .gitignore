@@ -1,4 +1,4 @@
 *.class
 *.data
 *.key
-*.png
+# *.png
